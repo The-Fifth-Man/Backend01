@@ -6,7 +6,6 @@ import com.example.backend.repository.UserRepository;
 import com.example.backend.service.*;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
-import com.example.backend.util.JsonUtils;
 import com.example.backend.dto.QuestionDTO;
 import com.example.backend.entity.Option;
 import com.example.backend.entity.Question;
@@ -22,14 +21,12 @@ public class ApiController {
 
     private final QuestionService qs;
     private final ExamService es;
-    private final ExamSubmissionService ess;
     private final UserRepository ur;
 
     public ApiController(QuestionService qs, ExamService es,
-                         ExamSubmissionService ess, UserRepository ur) {
+                          UserRepository ur) {
         this.qs = qs;
         this.es = es;
-        this.ess = ess;
         this.ur = ur;
     }
 
@@ -104,64 +101,6 @@ public class ApiController {
         return ApiResponse.ok(null);
     }
 
-    // --- Exams ---
-    @GetMapping("/exams")
-    public ApiResponse<PageResponse<Exam>> listExams(
-            @RequestParam(required=false) String search,
-            @RequestParam(defaultValue="0") int page,
-            @RequestParam(defaultValue="10") int pageSize) {
-        Page<Exam> p = es.query(search, page, pageSize);
-        return ApiResponse.ok(new PageResponse<>(p.getTotalElements(), p.getContent()));
-    }
-
-    @GetMapping("/exams/{id}")
-    public ApiResponse<Exam> getExam(@PathVariable String id) {
-        return ApiResponse.ok(es.get(id));
-    }
-
-    @PostMapping("/exams")
-    public ApiResponse<Exam> createExam(@RequestBody Exam e) {
-        return ApiResponse.ok(es.save(e));
-    }
-
-    @PutMapping("/exams/{id}")
-    public ApiResponse<Exam> updateExam(@PathVariable String id, @RequestBody Exam e) {
-        e.setId(id);
-        return ApiResponse.ok(es.save(e));
-    }
-
-    @DeleteMapping("/exams/{id}")
-    public ApiResponse<Void> deleteExam(@PathVariable String id) {
-        es.delete(id);
-        return ApiResponse.ok(null);
-    }
-
-    // --- User ---
-    @GetMapping("/user")
-    public ApiResponse<User> getCurrentUser() {
-        User u = ur.findAll().stream().findFirst().orElseThrow();
-        return ApiResponse.ok(u);
-    }
-
-    // --- Exam Submissions ---
-    @PostMapping("/exam-submissions")
-    public ApiResponse<ExamSubmission> submitExam(@RequestBody ExamSubmission sub) {
-        return ApiResponse.ok(ess.submit(sub));
-    }
-
-    @GetMapping("/exam-submissions/{id}")
-    public ApiResponse<ExamSubmission> getSubmission(@PathVariable String id) {
-        return ApiResponse.ok(ess.get(id));
-    }
-
-    @GetMapping("/users/{userId}/exam-history")
-    public ApiResponse<PageResponse<ExamSubmission>> getHistory(
-            @PathVariable String userId,
-            @RequestParam(defaultValue="0") int page,
-            @RequestParam(defaultValue="10") int pageSize) {
-        Page<ExamSubmission> p = ess.history(userId, page, pageSize);
-        return ApiResponse.ok(new PageResponse<>(p.getTotalElements(), p.getContent()));
-    }
 
     // --- Meta ---
     @GetMapping("/subjects")
